@@ -18,7 +18,7 @@ the alchemist's [happy path](https://en.wikipedia.org/wiki/Happy_path) with elix
 
 ```elixir
   def deps do
-    [{:happy, "~> 1.3.1"}]
+    [{:happy, "~> 1.3.2"}]
   end
 ```
 
@@ -95,18 +95,18 @@ end
 
 
 Sometimes you would want to share common error handling
-code on many happy_paths, for example in an api controller 
+code on many happy_paths, for example in an api controller
 with many actions, all of which handle common invalid cases
 like parameter validation.
 
 In those cases you can provide `happy_path` with an
 default error handler as first argument. Note that if no *local
-else clause* matches, the error value is *piped* into 
+else clause* matches, the error value is *piped* into
 the provided error handler. Thus the handler is anything
 you can pipe the error value into.
 
 ```elixir
-happy_path(else: handler) do 
+happy_path(else: handler) do
  {:ok, x} = foo
  x + 1
 else
@@ -118,11 +118,11 @@ gets rewritten to something like:
 
 ```elixir
 case foo do
-  {:ok, x} -> 
+  {:ok, x} ->
     x + 1
   {:error, y} ->
     y
-  err -> 
+  err ->
     err |> handler
 end
 ```
@@ -204,4 +204,3 @@ end
 ## Is it any good?
 
 [Yes](https://news.ycombinator.com/item?id=3067434)
-
