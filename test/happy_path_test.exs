@@ -5,508 +5,630 @@ defmodule HappyPathTest do
   import Happy
 
   test "match expr expands to case" do
-    a = quote do
-      happy_path do
-        {a} = b
-        c
+    a =
+      quote do
+        happy_path do
+          {a} = b
+          c
+        end
       end
-    end
-    b = quote do
-      b
-      |> case do
-           {a} -> {:happy, c}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        b
+        |> case do
+          {a} -> {:happy, c}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "empty block expands to itself" do
-    a = quote do
-      happy_path do
+    a =
+      quote do
+        happy_path do
+        end
       end
-    end
-    b = quote do
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "single expr expands to itself" do
-     a = quote do
-       happy_path do
-         foo
-       end
-     end
-     b = quote do
-       foo
-     end
-     assert_expands_to a, b, __ENV__
+    a =
+      quote do
+        happy_path do
+          foo
+        end
+      end
+
+    b =
+      quote do
+        foo
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "block without matches expands to itself" do
-     a = quote do
-       happy_path do
-         foo
-         bar
-       end
-     end
-     b = quote do
-       foo
-       bar
-     end
-     assert_expands_to a, b, __ENV__
-   end
+    a =
+      quote do
+        happy_path do
+          foo
+          bar
+        end
+      end
+
+    b =
+      quote do
+        foo
+        bar
+      end
+
+    assert_expands_to(a, b, __ENV__)
+  end
 
   test "block with single match expands to itself" do
-     a = quote do
-       happy_path do
-         foo = bar
-       end
-     end
-     b = quote do
-       foo = bar
-     end
-     assert_expands_to a, b, __ENV__
-   end
+    a =
+      quote do
+        happy_path do
+          foo = bar
+        end
+      end
+
+    b =
+      quote do
+        foo = bar
+      end
+
+    assert_expands_to(a, b, __ENV__)
+  end
 
   test "block with expr and match expands to itself" do
-    a = quote do
-      happy_path do
+    a =
+      quote do
+        happy_path do
+          baz
+          {foo} = baz
+        end
+      end
+
+    b =
+      quote do
         baz
         {foo} = baz
       end
-    end
-    b = quote do
-      baz
-      {foo} = baz
-    end
-    assert_expands_to a, b, __ENV__
+
+    assert_expands_to(a, b, __ENV__)
   end
 
-
   test "block with elixir case expands to itself" do
-    a = quote do
-      happy_path do
+    a =
+      quote do
+        happy_path do
+          case bar do
+            true -> nil
+          end
+
+          foo
+        end
+      end
+
+    b =
+      quote do
         case bar do
           true -> nil
         end
+
         foo
       end
-    end
-    b = quote do
-      case bar do
-        true -> nil
-      end
-      foo
-    end
-    assert_expands_to a, b, __ENV__
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "match in middle expands to case" do
-    a = quote do
-      happy_path do
-        a
-        {c} = b
-        d
+    a =
+      quote do
+        happy_path do
+          a
+          {c} = b
+          d
+        end
       end
-    end
-    b = quote do
-      (a
-       b
-       |> case do
+
+    b =
+      quote do
+        (
+          a
+
+          b
+          |> case do
             {c} -> {:happy, d}
             x -> x
           end
-      )|> case do
-            {:happy, x} -> x
-            x -> x
-          end
-    end
-    assert_expands_to a, b, __ENV__
+        )
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "block with match and expr expands to case" do
-    a = quote do
-      happy_path do
-        {foo} = bar
-        foo + 1
+    a =
+      quote do
+        happy_path do
+          {foo} = bar
+          foo + 1
+        end
       end
-    end
-    b = quote do
-      bar
-      |> case do
-           {foo} -> {:happy, foo + 1}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        bar
+        |> case do
+          {foo} -> {:happy, foo + 1}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "block with match and two exprs expands to case" do
-    a = quote do
-      happy_path do
-        {foo} = bar
-        baz
-        bat
+    a =
+      quote do
+        happy_path do
+          {foo} = bar
+          baz
+          bat
+        end
       end
-    end
-    b = quote do
-      bar
-      |> case do
-           {foo} ->
-             baz
-             {:happy, bat}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        bar
+        |> case do
+          {foo} ->
+            baz
+            {:happy, bat}
+
+          x ->
+            x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "block with match and three exprs expands to case" do
-    a = quote do
-      happy_path do
-        {foo} = bar
-        baz
-        bat
-        moo
+    a =
+      quote do
+        happy_path do
+          {foo} = bar
+          baz
+          bat
+          moo
+        end
       end
-    end
-    b = quote do
-      bar
-      |> case do
-           {foo} ->
-             baz
-             bat
-             {:happy, moo}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        bar
+        |> case do
+          {foo} ->
+            baz
+            bat
+            {:happy, moo}
+
+          x ->
+            x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "sequential matches expand to nested cases" do
-    a = quote do
-      happy_path do
-        {b} = a
-        c
-        {e} = d
-        f
+    a =
+      quote do
+        happy_path do
+          {b} = a
+          c
+          {e} = d
+          f
+        end
       end
-    end
-    b = quote do
-      a
-      |> case do
-           {b} ->
-             c
-             d |> case do
-                    {e} -> {:happy, f}
-                    x -> x
-                  end
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        a
+        |> case do
+          {b} ->
+            c
+
+            d
+            |> case do
+              {e} -> {:happy, f}
+              x -> x
+            end
+
+          x ->
+            x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "single expr with else expands to itself" do
-    a = quote do
-      happy_path do
-        foo
-      else
-        :true -> :unhappy
+    a =
+      quote do
+        happy_path do
+          foo
+        else
+          true -> :unhappy
+        end
       end
-    end
-    b = quote do
-      foo
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        foo
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "else clause expand to unhappy case" do
-    a = quote do
-      happy_path do
-        {foo} = bar
-        foo + 1
-      else
-        _ -> bar
+    a =
+      quote do
+        happy_path do
+          {foo} = bar
+          foo + 1
+        else
+          _ -> bar
+        end
       end
-    end
-    b = quote do
-      bar
-      |> case do
-           {foo} -> {:happy, foo + 1}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           _ -> bar
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        bar
+        |> case do
+          {foo} -> {:happy, foo + 1}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          _ -> bar
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "multiple pattern matching" do
-    a = quote do
-      happy_path do
-        c = b = a
-        e
+    a =
+      quote do
+        happy_path do
+          c = b = a
+          e
+        end
       end
-    end
-    b = quote do
-      a |> case do
-        c = b -> {:happy, e}
-        x -> x
-      end |> case do
-        {:happy, x} -> x
-        x -> x
+
+    b =
+      quote do
+        a
+        |> case do
+          c = b -> {:happy, e}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
       end
-    end
-    assert_expands_to a, b, __ENV__
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "two consecutive match expressions expand to nested case" do
-    a = quote do
-      happy_path do
-        {b} = a
-        {c} = b
-        d
+    a =
+      quote do
+        happy_path do
+          {b} = a
+          {c} = b
+          d
+        end
       end
-    end
-    b = quote do
-      a
-      |> case do
-           {b} ->
-             b
-             |> case do
-                  {c} -> {:happy, d}
-                  x -> x
-                end
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        a
+        |> case do
+          {b} ->
+            b
+            |> case do
+              {c} -> {:happy, d}
+              x -> x
+            end
+
+          x ->
+            x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "happy with guard" do
-    a = quote do
-      happy_path do
-        b when is_nil(b) = a
-        c
+    a =
+      quote do
+        happy_path do
+          b when is_nil(b) = a
+          c
+        end
       end
-    end
-    b = quote do
-      a
-      |> case do
-           b when is_nil(b) -> {:happy, c}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        a
+        |> case do
+          b when is_nil(b) -> {:happy, c}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "tagged match" do
-    a = quote do
-      happy_path do
-        @t b = a
-        c
+    a =
+      quote do
+        happy_path do
+          @t b = a
+          c
+        end
       end
-    end
-    b = quote do
-      {:t, a}
-      |> case do
-           {:t, b} -> {:happy, c}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
-  end
 
-
-  test "happy expr at match" do
-    a = quote do
-      happy_path do
-        y
-        @t b = a
-        c
-      end
-    end
-    b = quote do
-      ( y
+    b =
+      quote do
         {:t, a}
         |> case do
-             {:t, b} -> {:happy, c}
-             x -> x
-           end
-      )|> case do
-            {:happy, x} -> x
+          {:t, b} -> {:happy, c}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
+  end
+
+  test "happy expr at match" do
+    a =
+      quote do
+        happy_path do
+          y
+          @t b = a
+          c
+        end
+      end
+
+    b =
+      quote do
+        (
+          y
+
+          {:t, a}
+          |> case do
+            {:t, b} -> {:happy, c}
             x -> x
           end
-    end
-    assert_expands_to a, b, __ENV__
+        )
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "nested case with tag" do
-    a = quote do
-      happy_path do
-        {y} = x
-        @t b = a
-        c
+    a =
+      quote do
+        happy_path do
+          {y} = x
+          @t b = a
+          c
+        end
       end
-    end
-    b = quote do
-      x
-      |> case do
-           {y} ->
-             {:t, a}
-             |> case do
-                  {:t, b} -> {:happy, c}
-                  x -> x
-                end
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        x
+        |> case do
+          {y} ->
+            {:t, a}
+            |> case do
+              {:t, b} -> {:happy, c}
+              x -> x
+            end
+
+          x ->
+            x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "happy at when match" do
-    a = quote do
-      happy_path do
-        @t b when w = a
-        c
+    a =
+      quote do
+        happy_path do
+          @t b when w = a
+          c
+        end
       end
-    end
-    b = quote do
-      {:t, a}
-      |> case do
-           {:t, b} when w -> {:happy, c}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        {:t, a}
+        |> case do
+          {:t, b} when w -> {:happy, c}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "should not rewrite non-pattern matching expression" do
-    a = quote do
-      happy_path do
+    a =
+      quote do
+        happy_path do
+          x = 1
+          y
+        end
+      end
+
+    b =
+      quote do
         x = 1
         y
       end
-    end
-    b = quote do
-      x = 1
-      y
-    end
-    assert_expands_to a, b, __ENV__
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "should rewrite match with existing var" do
-    a = quote do
-      happy_path do
-        ^x = 1
-        y
+    a =
+      quote do
+        happy_path do
+          ^x = 1
+          y
+        end
       end
-    end
-    b = quote do
-      1
-      |> case do
-           ^x ->
-             {:happy, y}
-           x ->
-             x
-         end
-      |> case do
-           {:happy, x} ->
-             x
-           x ->
-             x
-         end
-    end
-    assert_expands_to a, b, __ENV__
+
+    b =
+      quote do
+        1
+        |> case do
+          ^x ->
+            {:happy, y}
+
+          x ->
+            x
+        end
+        |> case do
+          {:happy, x} ->
+            x
+
+          x ->
+            x
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "happy_path can take fallback error handler as first argument" do
-    a = quote do
-      happy_path(else: handle) do
-        {:ok, x} = a
-        x
-      else
-        {:error, y} -> y
-      end
-    end
-    b = quote do
-      a
-      |> case do
-           {:ok, x} -> {:happy, x}
-           x -> x
-         end
-      |> case do
-           {:happy, x} -> x
-           {:error, y} -> y
-           x -> x |> handle
+    a =
+      quote do
+        happy_path(else: handle) do
+          {:ok, x} = a
+          x
+        else
+          {:error, y} -> y
         end
-    end
-    assert_expands_to a, b, __ENV__
+      end
+
+    b =
+      quote do
+        a
+        |> case do
+          {:ok, x} -> {:happy, x}
+          x -> x
+        end
+        |> case do
+          {:happy, x} -> x
+          {:error, y} -> y
+          x -> x |> handle
+        end
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "happy_path can take default error handler as first argument" do
-    a = quote do
-      happy_path!(else: handle) do
-        {:ok, x} = a
-        x
+    a =
+      quote do
+        happy_path!(else: handle) do
+          {:ok, x} = a
+          x
+        end
       end
-    end
-    b = quote do
-      a
-      |> case do
-           {:ok, x} -> {:happy, x}
-           x -> x
-         end
-      |> case do
+
+    b =
+      quote do
+        a
+        |> case do
+          {:ok, x} -> {:happy, x}
+          x -> x
+        end
+        |> case do
           {:happy, x} -> x
           x -> x |> handle
         end
-    end
-    assert_expands_to a, b, __ENV__
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "happy_path with a match then direct set should not create compile-time warnings" do
@@ -517,83 +639,104 @@ defmodule HappyPathTest do
   end
 
   test "using @happy tag doesnt expand tagged match" do
-    a = quote do
-      happy_path do
-        @happy {x, y} = {"hell", "o"}
-        {:ok, x} = x
-        y
-      end
-    end
-    b = quote do
-      ( {x, y} = {"hell", "o"}
-        x
-        |> case do
-          {:ok, x} -> {:happy, y}
-          x -> x
+    a =
+      quote do
+        happy_path do
+          @happy {x, y} = {"hell", "o"}
+          {:ok, x} = x
+          y
         end
-      ) |> case do
+      end
+
+    b =
+      quote do
+        (
+          {x, y} = {"hell", "o"}
+
+          x
+          |> case do
+            {:ok, x} -> {:happy, y}
+            x -> x
+          end
+        )
+        |> case do
           {:happy, x} -> x
           x -> x
         end
-    end
-    assert_expands_to a, b, __ENV__
+      end
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "using @happy tag doesnt expand into single case" do
-    a = quote do
-      happy_path do
-        @happy {x, y} = {"hell", "o"}
+    a =
+      quote do
+        happy_path do
+          @happy {x, y} = {"hell", "o"}
+          y
+        end
+      end
+
+    b =
+      quote do
+        {x, y} = {"hell", "o"}
         y
       end
-    end
-    b = quote do
-      {x, y} = {"hell", "o"}
-      y
-    end
-    assert_expands_to a, b, __ENV__
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "issue #5: @happy tag with right case should leave case as is" do
-    a = quote do
-      happy_path do
-        @happy x = case m do
-                   n -> n
-                 end
+    a =
+      quote do
+        happy_path do
+          @happy x = case(m) do
+            n -> n
+          end
+          y
+        end
+      end
+
+    b =
+      quote do
+        x =
+          case m do
+            n -> n
+          end
+
         y
       end
-    end
-    b = quote do
-      x = case m do
-        n -> n
-      end
-      y
-    end
-    assert_expands_to a, b, __ENV__
+
+    assert_expands_to(a, b, __ENV__)
   end
 
   test "issue #6: tag with right hand case rewrites block to be part of right case" do
-    a = quote do
-      happy_path do
-        @foo x = case m do
-                   n -> n
-                 end
-        y
+    a =
+      quote do
+        happy_path do
+          @foo x = case(m) do
+            n -> n
+          end
+          y
+        end
       end
-    end
-    b = quote do
-      {:foo, case(m) do
-               n -> n
-             end}
-      |> case() do
+
+    b =
+      quote do
+        {:foo,
+         case(m) do
+           n -> n
+         end}
+        |> case do
           {:foo, x} -> {:happy, y}
           x -> x
-         end
-      |> case() do
-            {:happy, x} -> x
-            x -> x
-         end
-    end
-    assert_expands_to a, b, __ENV__
-  end
+        end
+        |> case do
+          {:happy, x} -> x
+          x -> x
+        end
+      end
 
+    assert_expands_to(a, b, __ENV__)
+  end
 end

@@ -1,11 +1,11 @@
 defmodule Happy.HappyPath do
-
+  @moduledoc false
   @happy (quote do
-             {:happy, x} -> x
-           end)
+            {:happy, x} -> x
+          end)
 
   @default (quote do
-             x -> x
+              x -> x
             end)
 
   defmacro __using__(_) do
@@ -20,53 +20,59 @@ defmodule Happy.HappyPath do
 
       defmacro happy_path(opts, blocks) do
         Happy.HappyPath.happy_opts(opts, blocks)
-        |> Happy.HappyPath.happy_macro
+        |> Happy.HappyPath.happy_macro()
       end
 
       defmacro happy_path!(opts, blocks) do
         Happy.HappyPath.happy_opts(opts, blocks)
-        |> Happy.HappyPath.happy_macro!
+        |> Happy.HappyPath.happy_macro!()
       end
     end
   end
 
   #### macurosu
 
-  def happy_macro!([do: path = {:__block__, _, _}]) do
+  def happy_macro!(do: path = {:__block__, _, _}) do
     happy_path!(path)
   end
 
-  def happy_macro!([do: x]), do: x
+  def happy_macro!(do: x), do: x
 
-  def happy_macro!([do: path = {:__block__, _, _},
-                          else: unhappy = [{:->, _, _} | _]]) do
+  def happy_macro!(
+        do: path = {:__block__, _, _},
+        else: unhappy = [{:->, _, _} | _]
+      ) do
     happy_path!(path, unhappy)
   end
 
-  def happy_macro!([do: x, else: [{:->, _, _} | _]]), do: x
+  def happy_macro!(do: x, else: [{:->, _, _} | _]), do: x
 
-  def happy_macro([do: path = {:__block__, _, _}]) do
+  def happy_macro(do: path = {:__block__, _, _}) do
     happy_path(path)
   end
 
-  def happy_macro([do: x]), do: x
+  def happy_macro(do: x), do: x
 
-  def happy_macro([do: path = {:__block__, _, _},
-                         else: unhappy = [{:->, _, _} | _]]) do
+  def happy_macro(
+        do: path = {:__block__, _, _},
+        else: unhappy = [{:->, _, _} | _]
+      ) do
     happy_path(path, unhappy)
   end
 
-  def happy_macro([do: x, else: [{:->, _, _} | _]]), do: x
+  def happy_macro(do: x, else: [{:->, _, _} | _]), do: x
 
   def happy_opts([else: else_pipe], blocks) do
-    else_clauses = Keyword.get(blocks, :else, []) ++ quote do
-      x -> x |> unquote(else_pipe)
-    end
+    else_clauses =
+      Keyword.get(blocks, :else, []) ++
+        quote do
+          x -> x |> unquote(else_pipe)
+        end
+
     Keyword.delete(blocks, :else) ++ [else: else_clauses]
   end
 
   ####
-
 
   defp happy_path!(path) do
     make_happy(path, @happy)
@@ -104,7 +110,7 @@ defmodule Happy.HappyPath do
   defp happier(xs) do
     xs
     |> Stream.map(&happy_match/1)
-    |> Enum.reverse
+    |> Enum.reverse()
     |> Enum.reduce(nil, &happy_expand/2)
   end
 
@@ -125,7 +131,7 @@ defmodule Happy.HappyPath do
   end
 
   # fix bug #5: @happy tag with right case skips code rewrite.
-  defp happy_match({:@, _, [{:happy, _, [eq = {:=, l, [a, b]} | bs]}]}) when length(bs) > 0 do
+  defp happy_match({:@, _, [{:happy, _, [{:=, l, [a, b]} | bs]}]}) when length(bs) > 0 do
     {be, bl, bx} = b
     {:skip, {:=, l, [a, {be, bl, bx ++ bs}]}}
   end
@@ -175,11 +181,13 @@ defmodule Happy.HappyPath do
 
   defp happy_expand({:ok, pattern, expression}, v) do
     quote do
-      unquote(expression) |> case do
+      unquote(expression)
+      |> case do
         unquote(pattern) -> unquote(v)
         x -> x
       end
-    end |> happy_form
+    end
+    |> happy_form
   end
 
   defp happy_expand({:skip, final_expression}, nil) do
@@ -192,6 +200,7 @@ defmodule Happy.HappyPath do
 
   defp happy_expand({:skip, a}, b) do
     block = {:__block__, [], [a, b]}
+
     case b do
       {_, [happy: true], _} -> block |> happy_form
       _ -> block
@@ -207,5 +216,4 @@ defmodule Happy.HappyPath do
   defp unhappy_case(unhappy_cases) do
     {:case, [], [[do: unhappy_cases]]}
   end
-
 end

@@ -1,5 +1,4 @@
 defmodule Happy.Macro do
-
   @moduledoc false
 
   # already piped code
@@ -26,12 +25,10 @@ defmodule Happy.Macro do
   def piped(code), do: code
 
   def unpipe(piped_code) do
-    piped_code |> Macro.unpipe |> Enum.map(fn {x,0} -> x end)
+    piped_code |> Macro.unpipe() |> Enum.map(fn {x, 0} -> x end)
   end
 
   def rpipe(a, b) do
     Macro.pipe(b, a, 0)
   end
-
-
 end

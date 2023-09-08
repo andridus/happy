@@ -5,11 +5,11 @@ defmodule Happy.Mixfile do
     [app: :happy,
      version: "1.3.1",
      elixir: "~> 1.0",
-     description: description,
-     package: package,
+     description: description(),
+     package: package(),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()]
   end
 
   def description do
@@ -46,7 +46,7 @@ defmodule Happy.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:mix_test_watch, "~> 0.2", only: :dev},
-     {:credo, "~> 0.2.5", only: :dev}]
+    [{:mix_test_watch, "~> 1.0", only: :dev},
+     {:credo, "~> 1.7", only: :dev}]
   end
 end

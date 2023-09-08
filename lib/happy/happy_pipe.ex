@@ -1,5 +1,5 @@
 defmodule Happy.HappyPipe do
-
+  @moduledoc false
   defmacro __using__(:happy_pipe) do
     quote do
       defmacro happy_pipe(x) do
@@ -10,14 +10,15 @@ defmodule Happy.HappyPipe do
 
   def happy(x) do
     Happy.Macro.piped(x)
-    |> Macro.unpipe
+    |> Macro.unpipe()
     |> Stream.map(fn {q, 0} -> q end)
-    |> Enum.reverse
+    |> Enum.reverse()
     |> make_happy([])
     |> apply_happy
   end
 
   defp apply_happy([a]), do: a
+
   defp apply_happy([a, hfn | rest]) do
     apply_happy([hfn.(a) | rest])
   end
@@ -32,7 +33,7 @@ defmodule Happy.HappyPipe do
   end
 
   defp make_happy([c, {happy, _, [b | e]} | prev], res)
-  when (happy == :happy or happy == :unhappy) do
+       when happy == :happy or happy == :unhappy do
     x = pipe_if(happy, b, c, e)
     make_happy(prev, [x] ++ res)
   end
@@ -59,16 +60,20 @@ defmodule Happy.HappyPipe do
   end
 
   def pipe_if(happy, b, c, o) do
-    same = quote do
-      case do
-        x -> x
+    same =
+      quote do
+        case do
+          x -> x
+        end
       end
-    end
+
     e = Enum.at(o, 0, same)
-    hif = happy == :happy && :if || :unless
+    hif = (happy == :happy && :if) || :unless
+
     fn a ->
       quote do
         happy_value = unquote(a)
+
         unquote(hif)(match?(unquote(b), happy_value)) do
           happy_value |> unquote(c)
         else
@@ -77,5 +82,4 @@ defmodule Happy.HappyPipe do
       end
     end
   end
-
 end

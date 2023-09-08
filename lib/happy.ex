@@ -5,5 +5,4 @@ defmodule Happy do
 
   use __MODULE__.HappyPath, :happy_path
   use __MODULE__.HappyPipe, :happy_pipe
-
 end
